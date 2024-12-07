@@ -31,5 +31,5 @@ class Solver:
     def is_valid(self,board,row,column,value):
         not_in_row = value not in board[row]
         not_in_column = value not in [board[i][column] for i in range(9)]
-        not_in_sub_grid = value not in [board[i][j] for i in range(row//3*3,row//3+3) for j in range(column//3*3,column//3+3)]
+        not_in_sub_grid = value not in [board[i][j] for i in range(row//3*3,row//3*3+3) for j in range(column//3*3,column//3*3+3)]
         return not_in_row and not_in_column and not_in_sub_grid

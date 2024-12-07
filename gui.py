@@ -17,16 +17,27 @@ class Ui_sudoku_solver(object):
         self.selected_button: QtWidgets.QPushButton = None
         self.solver = Solver()
         # self.board = [[0 for _ in range(9)] for _ in range(9)]
+        # self.board = [
+        #     [4, 6, 7, 9, 2, 1, 3, 5, 8],
+        #     [8, 9, 5, 4, 7, 3, 2, 6, 1],
+        #     [2, 3, 1, 8, 6, 5, 7, 4, 9],
+        #     [5, 1, 3, 6, 9, 8, 4, 2, 7],
+        #     [9, 2, 8, 7, 0, 4, 6, 1, 3],
+        #     [7, 4, 6, 1, 3, 2, 9, 8, 5], 
+        #     [3, 5, 4, 2, 8, 7, 1, 9, 6], 
+        #     [1, 8, 9, 3, 4, 6, 5, 7, 2], 
+        #     [6, 7, 2, 5, 1, 9, 8, 3, 0]
+        # ]
         self.board = [
-            [4, 6, 7, 9, 2, 1, 3, 5, 8],
-            [8, 9, 5, 4, 7, 3, 2, 6, 1],
-            [2, 3, 1, 8, 6, 5, 7, 4, 9],
-            [5, 1, 3, 6, 9, 8, 4, 2, 7],
-            [9, 2, 8, 7, 0, 4, 6, 1, 3],
-            [7, 4, 6, 1, 3, 2, 9, 8, 5], 
-            [3, 5, 4, 2, 8, 7, 1, 9, 6], 
-            [1, 8, 9, 3, 4, 6, 5, 7, 2], 
-            [6, 7, 2, 5, 1, 9, 8, 3, 0]
+            [2, 0, 0, 9, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 6, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [5, 0, 2, 6, 0, 0, 4, 0, 7],
+            [0, 0, 0, 0, 0, 4, 1, 0, 0],
+            [0, 0, 0, 0, 9, 8, 0, 2, 3], 
+            [0, 0, 0, 0, 0, 3, 0, 8, 0], 
+            [0, 0, 5, 0, 1, 0, 0, 0, 0], 
+            [0, 0, 7, 0, 0, 0, 0, 0, 0]
         ]
 
 
@@ -45,6 +56,12 @@ class Ui_sudoku_solver(object):
         font.setPointSize(20)
         self.solve_button.setFont(font)
         self.solve_button.setObjectName("solve_button")
+        self.reset_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.reset_button.setGeometry(QtCore.QRect(690, 550, 271, 51))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.reset_button.setFont(font)
+        self.reset_button.setObjectName("reset_button")
         self.time_label = QtWidgets.QLabel(parent=self.centralwidget)
         self.time_label.setGeometry(QtCore.QRect(690, 320, 301, 51))
         font = QtGui.QFont()
@@ -1163,6 +1180,7 @@ class Ui_sudoku_solver(object):
         _translate = QtCore.QCoreApplication.translate
         sudoku_solver.setWindowTitle(_translate("sudoku_solver", "Sudoku Solver"))
         self.solve_button.setText(_translate("sudoku_solver", "Solve"))
+        self.reset_button.setText(_translate("sudoku_solver", "Reset Board"))
         self.time_label.setText(_translate("sudoku_solver", "Time: "))
         self.result_label.setText(_translate("sudoku_solver", "Result: "))
         self.square_00.setText(_translate("sudoku_solver", "1"))
@@ -1330,9 +1348,14 @@ class Ui_sudoku_solver(object):
         self.square_88.clicked.connect(lambda: self.printValue("square_88"))
         
         self.solve_button.clicked.connect(self.solve)
+        self.reset_button.clicked.connect(self.reset_board)
         
         self.set_board_from_current_state()
-        
+    
+    def reset_board(self):
+        self.board = [[0 for _ in range(9)] for _ in range(9)]
+        self.set_board_from_current_state()
+    
     def keyboardEventReceived(self, event):
         if event.event_type == 'down' and self.selected_button:
             if re.match("^\\d+$",event.name):
