@@ -7,10 +7,33 @@ class SolverState:
         self.time = time
         
 class Solver:
+    def __init__(self):
+        self.possible_values = {}
+
     def solve(self,board) -> SolverState:
         start_time = time()
+        self.get_all_possible_values(board)
+        
+        if not self.is_solvable():
+            return SolverState(False,time()-start_time)
+        
         result = self.__solve(board,0,0)
         return SolverState(result,time()-start_time)
+    
+    def is_solvable(self):
+        for value in self.possible_values.values():
+            if len(value) == 0:
+                return False
+        return True
+    
+    def get_all_possible_values(self,board):
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == 0:
+                    self.possible_values[(i,j)] = self.get_values_for_cell(board,i,j)
+    
+    def get_values_for_cell(self,board,row,column):
+        return [i for i in range(1,10) if self.is_valid(board,row,column,i)]
     
     def __solve(self,board,row,column):
         if row == 9:
