@@ -12,7 +12,6 @@ import regex as re
 # from solver import Solver,SolverState
 from solver import Solver,SolverState
 from sudoku import Sudoku
-from PyQt6.QtWidgets import QMessageBox
 
 class Ui_sudoku_solver(object):
     def __init__(self):
@@ -85,8 +84,6 @@ class Ui_sudoku_solver(object):
         #     [0, 0, 5, 0, 1, 0, 0, 0, 0], 
         #     [0, 0, 7, 0, 0, 0, 0, 0, 0]
         # ]
-        
-
 
         
     def setupUi(self, sudoku_solver):
@@ -98,19 +95,19 @@ class Ui_sudoku_solver(object):
         self.centralwidget = QtWidgets.QWidget(parent=sudoku_solver)
         self.centralwidget.setObjectName("centralwidget")
         self.solve_button = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.solve_button.setGeometry(QtCore.QRect(690, 490, 271, 51))
+        self.solve_button.setGeometry(QtCore.QRect(690, 480, 271, 51))
         font = QtGui.QFont()
         font.setPointSize(20)
         self.solve_button.setFont(font)
         self.solve_button.setObjectName("solve_button")
         self.reset_button = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.reset_button.setGeometry(QtCore.QRect(690, 550, 271, 51))
+        self.reset_button.setGeometry(QtCore.QRect(690, 540, 271, 51))
         font = QtGui.QFont()
         font.setPointSize(20)
         self.reset_button.setFont(font)
         self.reset_button.setObjectName("reset_button")
         self.random_button = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.random_button.setGeometry(QtCore.QRect(690, 610, 271, 51))
+        self.random_button.setGeometry(QtCore.QRect(690, 600, 271, 51))
         font = QtGui.QFont()
         font.setPointSize(20)
         self.random_button.setFont(font)

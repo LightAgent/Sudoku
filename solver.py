@@ -15,7 +15,7 @@ class Solver:
         start_time = time()
         self.get_all_possible_values(board)
 
-        if not self.is_solvable(board):
+        if not self.is_solvable():
             return SolverState(False, time() - start_time)
 
         # Appling AC-3 to reduce domains
@@ -25,7 +25,7 @@ class Solver:
         result = self.__solve(board, 0, 0)
         return SolverState(result, time() - start_time)
 
-    def is_solvable(self,board):
+    def is_solvable(self):
         for value in self.possible_values.values():
             if len(value) == 0:
                 return False
@@ -104,7 +104,7 @@ class Solver:
                     if self.__solve(board, row, column + 1):
                         return True
                     board[row][column] = 0
-                    # print(f"Backtracking at: {row},{column} failed value => {value}")
+                    print(f"Backtracking at: {row},{column} failed value => {value}")
             return False
 
     def is_valid(self, board, row, column, value):
