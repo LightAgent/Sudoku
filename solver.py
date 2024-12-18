@@ -1,4 +1,4 @@
-from time import time
+from time import time,sleep
 import random
 
 
@@ -8,16 +8,16 @@ class SolverState:
         self.time = time
         
 class Solver:
-    def __init__(self):
+    def __init__(self,update_gui_board):
+        self.update_gui_board = update_gui_board
         self.possible_values = {}
         self.domains = {}
-        self.initialize_domains()
 
-    def initialize_domains(self):
+    def initialize_domains(self,board):
         for row in range(9):
             for col in range(9):
-                if self.board[row][col] != 0:
-                    self.domains[(row, col)] = {self.board[row][col]} #Pre-filled cell
+                if board[row][col] != 0:
+                    self.domains[(row, col)] = {board[row][col]} #Pre-filled cell
                 else:
                     self.domains[(row, col)] = set(range(1, 10)) #empty cell
 
@@ -35,26 +35,37 @@ class Solver:
         return True
 
     def solve_arc_consistency(self, board):
+        self.initialize_domains(board)
         start_time = time()
         if self.__solve_arc_consistency(board):
             return SolverState(True, time() - start_time)
         return SolverState(False, time() - start_time)
 
-    def backtrack_for_arc_consistency(self):
+    def __backtrack_for_arc_consistency(self, board):
         # Find the cell with the smallest domain (heuristic for efficiency)
         cell = min((cell for cell in self.domains if len(self.domains[cell]) > 1), key=lambda c: len(self.domains[c]))
+        
+        # Try each value in the domain of the selected cell
         for value in self.domains[cell]:
-            # Try assigning a value and solve recursively
-            original_domains = {key: self.domains[key].copy() for key in self.domains}  # Deep copy of domains
-            self.board[cell[0]][cell[1]] = value
+            # Save the current state of the domains for backtracking
+            original_domains = {key: self.domains[key].copy() for key in self.domains}
+
+            # Assign the value to the cell and update the board
+            board[cell[0]][cell[1]] = value
             self.domains[cell] = {value}
 
-            if self.apply_arc_consistency() and self.solve_with_arc_consistency():
-                return True
+            # Update arc consistency after the assignment
+            if self.apply_arc_consistency():
+                # Recursively attempt to solve the puzzle with the updated state
+                result = self.__solve_arc_consistency(board)
+                if result:
+                    return True
 
-            # Revert to the previous state if solving fails
+            # If assigning this value leads to a dead end, backtrack by restoring the domains
             self.domains = original_domains
-            self.board[cell[0]][cell[1]] = 0
+            board[cell[0]][cell[1]] = 0  # Revert the assignment
+
+        # If no valid assignment was found, return False (failure)
         return False
 
     def solve(self,board) -> SolverState:
@@ -93,8 +104,10 @@ class Solver:
             for value in range(1,10):
                 if self.is_valid(board,row,column,value):
                     board[row][column] = value
+                    self.update_gui_board(row,column,value)
                     if self.__solve(board,row,column+1):
                         return True
+                    self.update_gui_board(row,column,0)
                     board[row][column] = 0
             return False
     
@@ -111,7 +124,7 @@ class Solver:
             
             if not any(len(domain) == 1 for domain in self.domains.values()):
                 break
-        return self.backtrack_for_arc_consistency()
+        return self.__backtrack_for_arc_consistency()
     
     def is_valid(self,board,row,column,value):
         not_in_row = value not in board[row]
@@ -135,12 +148,21 @@ class Solver:
     def is_consistent(self, value, neighbor_value):
         return value != neighbor_value
     
+    def update_board(self):
+        self.update_gui_board(0,0,7)
+        
     def revise(self, xi, xj):
         revised = False
-        for value in self.possible_values[xi]:
-            if not any(self.is_consistent(value, neighbor_value) for neighbor_value in self.possible_values[xj]):
-                self.possible_values[xi].remove(value)
+        
+        to_be_removed = []
+        for value in self.domains[xi]:
+            if not any(self.is_consistent(value, neighbor_value) for neighbor_value in self.domains[xj]):
+                to_be_removed.append((xi,value))
                 revised = True
+                
+        for x,v in to_be_removed:
+            self.domains[x].remove(v)
+            
         return revised
     
     def generate_random_puzzle(self):

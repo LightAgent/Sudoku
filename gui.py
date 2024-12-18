@@ -15,19 +15,44 @@ class Ui_sudoku_solver(object):
     def __init__(self):
         self.hook = None
         self.selected_button: QtWidgets.QPushButton = None
-        self.solver = Solver()
+        self.solver = Solver(update_gui_board=self.update_board_sell)
         # self.board = [[0 for _ in range(9)] for _ in range(9)]
+        # self.board = [
+        #     [4, 6, 7, 9, 2, 1, 3, 5, 8],
+        #     [8, 9, 5, 4, 7, 3, 2, 6, 1],
+        #     [2, 3, 1, 8, 6, 5, 7, 4, 9],
+        #     [5, 1, 3, 6, 9, 8, 4, 2, 7],
+        #     [9, 2, 8, 7, 0, 4, 6, 1, 3],
+        #     [7, 4, 6, 1, 3, 2, 9, 8, 5], 
+        #     [3, 5, 4, 2, 8, 7, 1, 9, 6], 
+        #     [1, 8, 9, 3, 4, 6, 5, 7, 2], 
+        #     [6, 7, 2, 5, 1, 9, 8, 3, 0]
+        # ]
+        # ? Normal
+        # self.board = [
+        #     [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        #     [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        #     [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        #     [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        #     [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        #     [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        #     [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        #     [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        #     [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        # ]
+        # ? Hard
         self.board = [
-            [4, 6, 7, 9, 2, 1, 3, 5, 8],
-            [8, 9, 5, 4, 7, 3, 2, 6, 1],
-            [2, 3, 1, 8, 6, 5, 7, 4, 9],
-            [5, 1, 3, 6, 9, 8, 4, 2, 7],
-            [9, 2, 8, 7, 0, 4, 6, 1, 3],
-            [7, 4, 6, 1, 3, 2, 9, 8, 5], 
-            [3, 5, 4, 2, 8, 7, 1, 9, 6], 
-            [1, 8, 9, 3, 4, 6, 5, 7, 2], 
-            [6, 7, 2, 5, 1, 9, 8, 3, 0]
+            [0, 0, 0, 0, 0, 7, 0, 4, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [4, 0, 0, 0, 9, 0, 6, 0, 0],
+            [0, 8, 0, 7, 0, 0, 0, 0, 4],
+            [0, 4, 0, 0, 6, 3, 0, 0, 0],
+            [0, 1, 0, 0, 0, 4, 0, 9, 0],
+            [0, 5, 0, 0, 0, 0, 9, 0, 7],
+            [0, 0, 0, 6, 0, 0, 0, 0, 5],
+            [0, 7, 0, 0, 0, 0, 0, 8, 0]
         ]
+        # ? Unsolvable 
         # self.board = [
         #     [2, 0, 0, 9, 0, 0, 0, 0, 0],
         #     [0, 0, 0, 0, 0, 0, 0, 6, 0],
@@ -39,6 +64,7 @@ class Ui_sudoku_solver(object):
         #     [0, 0, 5, 0, 1, 0, 0, 0, 0], 
         #     [0, 0, 7, 0, 0, 0, 0, 0, 0]
         # ]
+        
 
 
         
@@ -1377,6 +1403,10 @@ class Ui_sudoku_solver(object):
         for i in range(9):
             for j in range(9):
                 getattr(self,f"square_{i}{j}").setText(str(self.board[i][j]))
+    
+    def update_board_sell(self,x,y,value):
+        self.board[x][y] = value
+        getattr(self,f"square_{x}{y}").setText(str(value))
         
     def print_board(self):
         for i in range(9):
@@ -1385,7 +1415,8 @@ class Ui_sudoku_solver(object):
             print("")
             
     def solve(self):
-        result: SolverState = self.solver.solve(self.board)
+        result: SolverState = self.solver.solve_arc_consistency(self.board)
+        # result: SolverState = self.solver.solve(self.board)
         self.set_board_from_current_state()
         self.time_label.setText(f"Time: {result.time}")
         self.result_label.setText(f"Result: "+"Solved!" if result.state else "Couldn't Solve!")
