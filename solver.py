@@ -15,20 +15,27 @@ class Solver:
         start_time = time()
         self.get_all_possible_values(board)
 
-        if not self.is_solvable():
+        if not self.is_solvable(board):
             return SolverState(False, time() - start_time)
 
-        # Apply AC-3 to reduce domains
+        # Appling AC-3 to reduce domains
         self.ac3()
 
         # Backtrack to find a solution
         result = self.__solve(board, 0, 0)
         return SolverState(result, time() - start_time)
 
-    def is_solvable(self):
+    def is_solvable(self,board):
         for value in self.possible_values.values():
             if len(value) == 0:
                 return False
+            
+        # for i in range(9):
+        #     for j in range(9):
+        #         if board[i][j] != 0:
+        #             if not self.is_valid(board,i,j,board[i][j]):
+        #                 return False
+        print("Returned True")
         return True
 
     def get_all_possible_values(self, board):
@@ -66,6 +73,7 @@ class Solver:
             if self.revise(xi, xj):
                 if len(self.possible_values[xi]) == 0:
                     return False
+                # Adds all the one-way arcs 
                 for xk in self.get_neighbors(xi) - {xj}:
                     queue.append((xk, xi))
         return True
@@ -96,6 +104,7 @@ class Solver:
                     if self.__solve(board, row, column + 1):
                         return True
                     board[row][column] = 0
+                    # print(f"Backtracking at: {row},{column} failed value => {value}")
             return False
 
     def is_valid(self, board, row, column, value):

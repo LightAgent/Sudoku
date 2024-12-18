@@ -10,8 +10,9 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 import keyboard
 import regex as re
 # from solver import Solver,SolverState
-from solver2 import Solver,SolverState
+from solver import Solver,SolverState
 from sudoku import Sudoku
+from PyQt6.QtWidgets import QMessageBox
 
 class Ui_sudoku_solver(object):
     def __init__(self):
@@ -1416,17 +1417,24 @@ class Ui_sudoku_solver(object):
     
     def keyboardEventReceived(self, event):
         if event.event_type == 'down' and self.selected_button:
-            if re.match("^\\d+$",event.name):
+            x,y = [int(i) for i in self.selected_button.objectName().split("_")[-1]]
+            if re.match("^\\d+$",event.name) and self.check_if_input_is_valid(x,y,int(event.name)):
                 print(event.name)
                 self.selected_button.setText(event.name)
-                self.change_board_cell(event.name)
+                self.change_board_cell(x,y,event.name)
                 keyboard.unhook(self.hook)
                 self.selected_button.setStyleSheet("")
                 self.selected_button = None
-
-    def change_board_cell(self,num):
+        
+        
+    def check_if_input_is_valid(self,x,y,num):
+        if not self.solver.is_valid(self.board,x,y,int(num)):
+            self.result_label.setText(f"Status: Invalid State!" )
+            return False
+        return True
+    
+    def change_board_cell(self,x,y,num):
         print(self.selected_button.objectName())
-        x,y = [int(i) for i in self.selected_button.objectName().split("_")[-1]]
         self.board[x][y] = int(num)
         self.print_board()
         self.set_board_from_current_state()
