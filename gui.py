@@ -9,14 +9,17 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 import keyboard
 import regex as re
-from solver import Solver,SolverState
+# from solver import Solver,SolverState
+from solver2 import Solver,SolverState
+from sudoku import Sudoku
 
 class Ui_sudoku_solver(object):
     def __init__(self):
         self.hook = None
         self.selected_button: QtWidgets.QPushButton = None
-        self.solver = Solver(update_gui_board=self.update_board_sell)
-        # self.board = [[0 for _ in range(9)] for _ in range(9)]
+        # self.solver = Solver(update_gui_board=self.update_board_sell)
+        self.solver = Solver()
+        self.board = [[0 for _ in range(9)] for _ in range(9)]
         # self.board = [
         #     [4, 6, 7, 9, 2, 1, 3, 5, 8],
         #     [8, 9, 5, 4, 7, 3, 2, 6, 1],
@@ -41,17 +44,34 @@ class Ui_sudoku_solver(object):
         #     [0, 0, 0, 0, 8, 0, 0, 7, 9]
         # ]
         # ? Hard
-        self.board = [
-            [0, 0, 0, 0, 0, 7, 0, 4, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [4, 0, 0, 0, 9, 0, 6, 0, 0],
-            [0, 8, 0, 7, 0, 0, 0, 0, 4],
-            [0, 4, 0, 0, 6, 3, 0, 0, 0],
-            [0, 1, 0, 0, 0, 4, 0, 9, 0],
-            [0, 5, 0, 0, 0, 0, 9, 0, 7],
-            [0, 0, 0, 6, 0, 0, 0, 0, 5],
-            [0, 7, 0, 0, 0, 0, 0, 8, 0]
-        ]
+        self.puzzle = Sudoku(3).difficulty(0.9)
+        self.board = self.puzzle.board
+        for i in range(9):
+            for j in range(9):
+                if self.board[i][j] == None:
+                    self.board[i][j] = 0
+        # self.board = [
+        #     [0, 0, 0, 0, 0, 7, 0, 4, 0],
+        #     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        #     [4, 0, 0, 0, 9, 0, 6, 0, 0],
+        #     [0, 8, 0, 7, 0, 0, 0, 0, 4],
+        #     [0, 4, 0, 0, 6, 3, 0, 0, 0],
+        #     [0, 1, 0, 0, 0, 4, 0, 9, 0],
+        #     [0, 5, 0, 0, 0, 0, 9, 0, 7],
+        #     [0, 0, 0, 6, 0, 0, 0, 0, 5],
+        #     [0, 7, 0, 0, 0, 0, 0, 8, 0]
+        # ]
+        # self.board = [
+        #     [3, 0, 0, 0, 0, 0, 9, 6, 8],
+        #     [7, 0, 0, 4, 0, 0, 0, 0, 5],
+        #     [0, 6, 0, 0, 0, 3, 0, 0, 0],
+        #     [0, 8, 7, 0, 5, 0, 0, 0, 0],
+        #     [0, 0, 0, 1, 0, 6, 0, 0, 0],
+        #     [0, 0, 0, 0, 9, 0, 2, 5, 0],
+        #     [0, 0, 0, 6, 0, 0, 0, 2, 0],
+        #     [4, 0, 0, 0, 0, 9, 0, 0, 3],
+        #     [8, 5, 6, 0, 0, 0, 0, 0, 4]
+        # ]
         # ? Unsolvable 
         # self.board = [
         #     [2, 0, 0, 9, 0, 0, 0, 0, 0],
@@ -88,6 +108,12 @@ class Ui_sudoku_solver(object):
         font.setPointSize(20)
         self.reset_button.setFont(font)
         self.reset_button.setObjectName("reset_button")
+        self.random_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.random_button.setGeometry(QtCore.QRect(690, 610, 271, 51))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.random_button.setFont(font)
+        self.random_button.setObjectName("random_button")
         self.time_label = QtWidgets.QLabel(parent=self.centralwidget)
         self.time_label.setGeometry(QtCore.QRect(690, 320, 301, 51))
         font = QtGui.QFont()
@@ -1207,6 +1233,7 @@ class Ui_sudoku_solver(object):
         sudoku_solver.setWindowTitle(_translate("sudoku_solver", "Sudoku Solver"))
         self.solve_button.setText(_translate("sudoku_solver", "Solve"))
         self.reset_button.setText(_translate("sudoku_solver", "Reset Board"))
+        self.random_button.setText(_translate("sudoku_solver", "Generate Board"))
         self.time_label.setText(_translate("sudoku_solver", "Time: "))
         self.result_label.setText(_translate("sudoku_solver", "Result: "))
         self.square_00.setText(_translate("sudoku_solver", "1"))
@@ -1375,9 +1402,14 @@ class Ui_sudoku_solver(object):
         
         self.solve_button.clicked.connect(self.solve)
         self.reset_button.clicked.connect(self.reset_board)
+        self.random_button.clicked.connect(self.generate_random_board)
         
         self.set_board_from_current_state()
     
+    def generate_random_board(self):
+        self.board = self.solver.generate_random_board()
+        self.set_board_from_current_state()
+        
     def reset_board(self):
         self.board = [[0 for _ in range(9)] for _ in range(9)]
         self.set_board_from_current_state()
@@ -1415,8 +1447,8 @@ class Ui_sudoku_solver(object):
             print("")
             
     def solve(self):
-        result: SolverState = self.solver.solve_arc_consistency(self.board)
-        # result: SolverState = self.solver.solve(self.board)
+        # result: SolverState = self.solver.solve_arc_consistency(self.board)
+        result: SolverState = self.solver.solve(self.board)
         self.set_board_from_current_state()
         self.time_label.setText(f"Time: {result.time}")
         self.result_label.setText(f"Result: "+"Solved!" if result.state else "Couldn't Solve!")
